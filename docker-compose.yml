@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: citas-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: citas_medicas_api
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - citas-net
+
+  backend:
+    image: edosebas/citas-backend:1.0.0
+    container_name: citas-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@db:3306/citas_medicas_api
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    networks:
+      - citas-net
+
+  recordatorios:
+    image: edosebas/citas-recordatorios:1.0.0
+    container_name: citas-recordatorios
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      API_URL: http://backend:3000
+      INTERVALO_SEGUNDOS: 30
+      VENTANA_HORAS: 72
+    networks:
+      - citas-net
+
+volumes:
+  mysql_data:
+
+networks:
+  citas-net:

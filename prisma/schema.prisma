@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// En el código usamos nombres en inglés; en MySQL las tablas y columnas quedan en español.
+enum AppointmentStatus {
+  PENDING   @map("PENDIENTE")
+  CONFIRMED @map("CONFIRMADA")
+  COMPLETED @map("COMPLETADA")
+  CANCELLED @map("CANCELADA")
+}
+
+model Patient {
+  id           Int           @id @default(autoincrement())
+  fullName     String        @map("nombre_completo") @db.VarChar(150)
+  documentId   String        @unique @map("documento_identificacion") @db.VarChar(30)
+  email        String        @unique @map("correo") @db.VarChar(120)
+  phone        String        @map("telefono") @db.VarChar(20)
+  createdAt    DateTime      @default(now()) @map("creado_en")
+  appointments Appointment[]
+
+  @@map("pacientes")
+}
+
+model Doctor {
+  id           Int           @id @default(autoincrement())
+  fullName     String        @map("nombre_completo") @db.VarChar(150)
+  specialty    String        @map("especialidad") @db.VarChar(100)
+  email        String        @unique @map("correo") @db.VarChar(120)
+  createdAt    DateTime      @default(now()) @map("creado_en")
+  appointments Appointment[]
+
+  @@map("medicos")
+}
+
+model Appointment {
+  id        Int               @id @default(autoincrement())
+  patientId Int               @map("paciente_id")
+  doctorId  Int               @map("medico_id")
+  dateTime  DateTime          @map("fecha_hora")
+  reason    String            @map("motivo") @db.VarChar(255)
+  status    AppointmentStatus @default(PENDING) @map("estado")
+  createdAt DateTime          @default(now()) @map("creado_en")
+
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctor  Doctor  @relation(fields: [doctorId], references: [id])
+
+  @@index([doctorId, dateTime])
+  @@index([patientId])
+  @@map("citas")
+}

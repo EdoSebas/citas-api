@@ -1,0 +1,58 @@
+### Extensión "REST Client" de VS Code: clic en "Send Request" sobre cada bloque
+@base = http://localhost:3000
+
+### Salud
+GET {{base}}/health
+
+### Registrar paciente
+POST {{base}}/patients
+Content-Type: application/json
+
+{
+  "fullName": "Laura Gomez Rios",
+  "documentId": "1001234567",
+  "email": "laura.gomez@mail.com",
+  "phone": "3001112233"
+}
+
+### Listar pacientes
+GET {{base}}/patients
+
+### Registrar médico
+POST {{base}}/doctors
+Content-Type: application/json
+
+{
+  "fullName": "Dr. Ricardo Herrera",
+  "specialty": "Medicina General",
+  "email": "ricardo.herrera@clinica.com"
+}
+
+### Listar médicos
+GET {{base}}/doctors
+
+### Programar cita
+POST {{base}}/appointments
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "doctorId": 1,
+  "dateTime": "2026-10-25T09:00:00Z",
+  "reason": "Control general"
+}
+
+### Listar citas (filtros opcionales)
+GET {{base}}/appointments?date=2026-10-25
+
+### Consultar una cita
+GET {{base}}/appointments/1
+
+### Cambiar estado
+PATCH {{base}}/appointments/1/status
+Content-Type: application/json
+
+{ "status": "CONFIRMED" }
+
+### Cancelar cita
+DELETE {{base}}/appointments/1
